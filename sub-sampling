@@ -1,0 +1,40 @@
+import random
+
+# Define the sampling rate
+sampling_rate = 0.1  # Adjust the sampling rate as needed
+
+# Read the input file
+file_path = r'C:\Users\Duck\Downloads\loc-gowalla_totalCheckins.txt\Gowalla_totalCheckins.txt'  # Update with the path to your input file
+
+# Output file to store sampled data
+output_file = 'sampled_0_1_output.txt'
+
+# Dictionary to store user data
+user_data = {}
+current_user_id=-1
+sample=False
+
+with open(file_path, 'r') as file:
+    for line in file:
+        user_id, checkin_time, latitude, longitude, location_id = line.strip().split('\t')
+        
+        if sample and (user_id==current_user_id):
+            user_data[user_id].append((checkin_time, latitude, longitude, location_id))
+
+        if (user_id!=current_user_id):
+            current_user_id=user_id
+            if random.random() < sampling_rate:
+                sample=True
+                user_data[user_id] = [(checkin_time, latitude, longitude, location_id)]
+            else:
+                sample=False
+
+
+
+# Write the sampled data to the output file
+with open(output_file, 'w') as output:
+    for user_id, data in user_data.items():
+        for checkin in data:
+            output_line = '\t'.join([user_id, checkin[0], checkin[1], checkin[2], checkin[3]]) + '\n'
+            output.write(output_line)
+print("Sampling and writing to file completed.")
