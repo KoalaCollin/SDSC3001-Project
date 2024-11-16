@@ -1,40 +1,47 @@
 import random
 
-# Define the sampling rate
-sampling_rate = 0.1  # Adjust the sampling rate as needed
+# Define the sampling rates
+sampling_rates = [0.2, 0.1, 0.05, 0.025]
 
 # Read the input file
 file_path = r'C:\Users\Duck\Downloads\loc-gowalla_totalCheckins.txt\Gowalla_totalCheckins.txt'  # Update with the path to your input file
 
-# Output file to store sampled data
-output_file = 'sampled_0_1_output.txt'
+# Output files to store sampled data
+output_files = ['sampled_output_0.2.txt', 'sampled_output_0.1.txt', 'sampled_output_0.05.txt', 'sampled_output_0.025.txt']
 
-# Dictionary to store user data
-user_data = {}
-current_user_id=-1
-sample=False
+# Dictionaries to store user data for each sampling rate
+user_data = [{} for _ in range(len(sampling_rates))]
+sampled_user_counts = [0 for _ in range(len(sampling_rates))]
+
+sample={0.2:False, 0.1:False, 0.05:False, 0.025:False}
+current_user_id= [-1 for _ in range(len(sampling_rates))]
+
+
 
 with open(file_path, 'r') as file:
     for line in file:
         user_id, checkin_time, latitude, longitude, location_id = line.strip().split('\t')
-        
-        if sample and (user_id==current_user_id):
-            user_data[user_id].append((checkin_time, latitude, longitude, location_id))
+        j=0
+        for i in sampling_rates:
+            if sample[i] and user_id == current_user_id[j]:
+                user_data[j][user_id].append((checkin_time, latitude, longitude, location_id))
 
-        if (user_id!=current_user_id):
-            current_user_id=user_id
-            if random.random() < sampling_rate:
-                sample=True
-                user_data[user_id] = [(checkin_time, latitude, longitude, location_id)]
-            else:
-                sample=False
+            if user_id != current_user_id[j]:
+                current_user_id[j] = user_id
+                if random.random() < i:
+                    sample[i] = True
+                    user_data[j][user_id] = [(checkin_time, latitude, longitude, location_id)]
+                    sampled_user_counts[j] += 1
+                else:
+                    sample[i] = False
+            j+=1
+    # Write the sampled data to the output file
+    for i in range(4):
+        with open(output_files[i], 'w') as output:
+            for user_id, data in user_data[i].items():
+                for checkin in data:
+                    output_line = '\t'.join([user_id, checkin[0], checkin[1], checkin[2], checkin[3]]) + '\n'
+                    output.write(output_line)
 
-
-
-# Write the sampled data to the output file
-with open(output_file, 'w') as output:
-    for user_id, data in user_data.items():
-        for checkin in data:
-            output_line = '\t'.join([user_id, checkin[0], checkin[1], checkin[2], checkin[3]]) + '\n'
-            output.write(output_line)
-print("Sampling and writing to file completed.")
+        print("Sampling with rate ", sampling_rates[i]," and writing to file completed.")
+        print("Sampled user count for rate ", sampling_rates[i],": ",sampled_user_counts[i])
