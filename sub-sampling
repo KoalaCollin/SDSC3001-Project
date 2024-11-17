@@ -92,17 +92,3 @@ for i in range(len(sampling_rates)):
     print("Sampled user count for rate", sampling_rates[i], ":", sampled_user_counts[i])
 
 
-
-
-
-
-# sort
-def sort_data_by_checkin_time(user_data, sampled_dataset):
-    for i in range(len(sampling_rates)):
-        for user_id in user_data[i]:
-            user_data[i][user_id] = sorted(user_data[i][user_id], key=lambda x: x[0])
-        sampled_dataset[i] = sorted(sampled_dataset[i], key=lambda x: x[1])
-
-# Call this function after the sampling process
-sort_data_by_checkin_time(user_data, sampled_dataset)
-
